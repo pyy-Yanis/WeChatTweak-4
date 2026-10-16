@@ -54,7 +54,8 @@ extension Tweak {
 
             print("------ Resign ------")
             try await Command.resign(
-                app: options.app
+                app: options.app,
+                config: config
             )
             print("Done!")
 

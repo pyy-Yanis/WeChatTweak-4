@@ -1,0 +1,23 @@
+{
+  "version": "270135",
+  "sha256": "6a5bd0cbb39ad3092c15e9debda2db4969eedf1b58caad244d88033a996833a7",
+  "entry": "0x4d1f8d8",
+  "restore_parser": {
+    "addr": "0x4d1fb48",
+    "original": "40100034",
+    "silent": "82000014"
+  },
+  "newmsgid_store": {
+    "addr": "0x4d202e8",
+    "original": "60e600f9",
+    "candidate": "7fe600f9",
+    "field": "[x19,#0x1c8]"
+  },
+  "evidence": [
+    "newmsgid string constant at 0x88babb8",
+    "newmsgid numeric parsing BL 0x4bd8164 immediately precedes store",
+    "replacemsg parsing follows and stores string at [x19,#0x1d0]",
+    "dual anchor delta 0x7a0 unique in pristine arm64 slice"
+  ],
+  "status": "static candidate only; not installed or runtime-tested"
+}

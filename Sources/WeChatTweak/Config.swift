@@ -9,6 +9,11 @@ import Foundation
 import MachO
 
 struct Config: Decodable {
+    enum Binary: String, Decodable {
+        case main = "Contents/MacOS/WeChat"
+        case resources = "Contents/Resources/wechat.dylib"
+    }
+
     enum Arch: String, Decodable {
         case arm64
         case x86_64
@@ -27,11 +32,13 @@ struct Config: Decodable {
         let arch: Arch
         let addr: UInt64
         let asm: Data
+        let expected: Data?
 
         private enum CodingKeys: CodingKey {
             case arch
             case addr
             case asm
+            case expected
         }
 
         init(from decoder: any Decoder) throws {
@@ -59,6 +66,18 @@ struct Config: Decodable {
                 }
                 return value
             }()
+            if let hex = try container.decodeIfPresent(String.self, forKey: .expected) {
+                guard let value = Data(hex: hex), !value.isEmpty, value.count == asm.count else {
+                    throw DecodingError.dataCorruptedError(
+                        forKey: CodingKeys.expected,
+                        in: container,
+                        debugDescription: "Entry.expected must match the patch length"
+                    )
+                }
+                self.expected = value
+            } else {
+                self.expected = nil
+            }
         }
     }
 
@@ -79,7 +98,10 @@ struct Config: Decodable {
     }
 
     let version: String
+    let binary: Binary?
     let targets: [Target]
+
+    var binaryPath: String { (binary ?? .main).rawValue }
 
     static func load(url: URL) async throws -> [Config] {
         if url.isFileURL {

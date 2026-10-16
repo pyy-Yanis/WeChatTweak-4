@@ -1,0 +1,13 @@
+{
+  "build": "270091",
+  "arm64_sha256": "b34e39af3dca3bba09342682998260b608dec2abdf75cc43d0c81b7a49a8a186",
+  "function_entry": "4bbe7b8",
+  "silent_address": "4bbea28",
+  "original_branch": "40100034",
+  "patched_branch": "82000014",
+  "branch_target": "4bbec30",
+  "keeptip_address": "4bbf1c8",
+  "original_store": "60E600F9",
+  "patched_store": "7FE600F9",
+  "double_anchor_hit_count": 1
+}

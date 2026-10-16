@@ -15,6 +15,7 @@ struct Patcher {
         case not64BitMachO(magic: UInt32)
         case vaNotFound(arch: String, va: UInt64)
         case noArchMatched
+        case unexpectedBytes(arch: String, va: UInt64)
     }
 
     static func patch(binary: URL, config: Config) throws {
@@ -35,7 +36,7 @@ struct Patcher {
         let magicBE = magicData.withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
         let isSwappedFat = (magicBE == FAT_CIGAM)
 
-        var patchedCount = 0
+        var writes: [(offset: UInt64, data: Data)] = []
         if magicBE == FAT_MAGIC || magicBE == FAT_CIGAM {
             // FAT header: magic(4) + nfat_arch(4)
             guard let nfatData = try fh.read(upToCount: 4), nfatData.count == 4 else {
@@ -62,12 +63,13 @@ struct Patcher {
             for entry in archEntries {
                 let matching = entries.filter { $0.arch.cpu == entry.cputype }
                 for target in matching {
-                    try patchOneSlice(file: fh,
+                    let offset = try locatePatch(file: fh,
                                       sliceOffset: UInt64(entry.offset),
                                       targetVA: target.addr,
                                       patch: target.asm,
+                                      expected: target.expected,
                                       archName: target.arch.rawValue)
-                    patchedCount += 1
+                    writes.append((offset, target.asm))
                 }
             }
         } else {
@@ -89,25 +91,32 @@ struct Patcher {
             }
 
             for target in matching {
-                try patchOneSlice(file: fh,
+                let offset = try locatePatch(file: fh,
                                   sliceOffset: 0,
                                   targetVA: target.addr,
                                   patch: target.asm,
+                                  expected: target.expected,
                                   archName: target.arch.rawValue)
-                patchedCount += 1
+                writes.append((offset, target.asm))
             }
         }
 
-        if patchedCount <= 0 {
+        if writes.isEmpty {
             throw Error.noArchMatched
+        }
+        // Validate every entry before changing any bytes.
+        for write in writes {
+            try fh.seek(toOffset: write.offset)
+            try fh.write(contentsOf: write.data)
         }
     }
 
-    private static func patchOneSlice(file fh: FileHandle,
+    private static func locatePatch(file fh: FileHandle,
                                       sliceOffset: UInt64,
                                       targetVA: UInt64,
                                       patch: Data,
-                                      archName: String) throws {
+                                      expected: Data?,
+                                      archName: String) throws -> UInt64 {
 
         // 读 slice 内 mach_header_64
         try fh.seek(toOffset: sliceOffset)
@@ -147,9 +156,14 @@ struct Patcher {
                     print("[\(archName)] vmaddr=\(String(format: "0x%llx", vmaddr)), fileoff=\(String(format: "0x%llx", fileoff)), sliceoff=\(String(format: "0x%llx", sliceOffset))")
                     print("[\(archName)] patch VA=\(String(format: "0x%llx", targetVA)), fileoff=\(String(format: "0x%llx", fileOffset))")
 
-                    try fh.seek(toOffset: fileOffset)
-                    try fh.write(contentsOf: patch)
-                    return
+                    if let expected {
+                        try fh.seek(toOffset: fileOffset)
+                        let current = try fh.read(upToCount: expected.count)
+                        guard current == expected || current == patch else {
+                            throw Error.unexpectedBytes(arch: archName, va: targetVA)
+                        }
+                    }
+                    return fileOffset
                 }
             }
 

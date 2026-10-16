@@ -1,0 +1,18 @@
+{
+  "version": "4.1.15.55",
+  "build": "270135",
+  "arm64_sha256": "6a5bd0cbb39ad3092c15e9debda2db4969eedf1b58caad244d88033a996833a7",
+  "revoke_function_entry": "4d1f8d8",
+  "revoke_classifier": "48a94cc",
+  "revoke_address": "4d1fb48",
+  "branch_original": "40100034",
+  "branch_patched": "82000014",
+  "branch_target": "4d1fd50",
+  "paired_store": "4d202e8",
+  "paired_store_original": "60E600F9",
+  "double_anchor_hit_count": 1,
+  "multi_check_entry": "286154",
+  "multi_check_caller": "2ca6b8",
+  "multi_original": "FF0306D1FC6F14A9",
+  "multi_patched": "20008052C0035FD6"
+}

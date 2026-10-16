@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import ArgumentParser
 
 struct Command {
     enum Error: @unchecked Sendable, LocalizedError {
@@ -24,13 +23,13 @@ struct Command {
     }
 
     static func patch(app: URL, config: Config) async throws {
-        try Patcher.patch(binary: app.appendingPathComponent("Contents/MacOS/WeChat"), config: config)
+        try Patcher.patch(binary: app.appendingPathComponent(config.binaryPath), config: config)
     }
 
-    static func resign(app: URL) async throws {
-        try await Command.execute(command: "codesign --remove-sign \(app.path)")
-        try await Command.execute(command: "codesign --force --deep --sign - \(app.path)")
-        try await Command.execute(command: "xattr -cr \(app.path)")
+    static func resign(app: URL, config: Config) async throws {
+        let nested = config.binaryPath == "Contents/MacOS/WeChat"
+            ? [] : [app.appendingPathComponent(config.binaryPath)]
+        try Resigner.resign(app: app, patchedBinaries: nested)
     }
 
     @discardableResult
