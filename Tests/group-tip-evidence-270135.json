@@ -1,0 +1,23 @@
+{
+  "version": "270135",
+  "arch": "arm64",
+  "pristine_sha256": "6a5bd0cbb39ad3092c15e9debda2db4969eedf1b58caad244d88033a996833a7",
+  "handler": "0x35373c8",
+  "typed_cast_rtti": "0x9eb5f20",
+  "missing_original_test": "0x3539188",
+  "session_field": "0x1e8",
+  "chatroom_predicate": "0x4bb3974",
+  "predicate_literal": "@chatroom",
+  "literal_prefix_address": "0x85051b0",
+  "patch_address": "0x353919c",
+  "expected": "a0120034",
+  "asm": "95000014",
+  "branch_target": "0x35393f0",
+  "message_setup": {
+    "system_type_10000": "0x35385d4",
+    "copied_id_zero": "0x3538618",
+    "native_content_builder": "0x3538624",
+    "fallback_submission": "0x35396c4"
+  },
+  "state": "User-reported successful private/group chat message retention and native tips, no duplicate tips and correct sender; synthetic, static review, strict signing and startup checks passed. Broader scenarios not fully verified."
+}

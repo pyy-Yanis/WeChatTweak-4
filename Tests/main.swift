@@ -226,3 +226,41 @@ try Patcher.patch(binary: largeBinary, config: latestTip)
 let pristineToTip = try readAt(latestFile, 0x4d202e8, 4)
 assert(pristineToTip == zeroStore)
 print("PASS: 270135 native-tip pristine/silent transition, repeat apply, silent rollback, multi preserved")
+
+let groupURL = bundled.appendingPathComponent("config-4.1.15.55-group-tip.json")
+guard FileManager.default.fileExists(atPath: groupURL.path) else {
+    print("FAIL: 270135 group native-tip config is missing")
+    exit(1)
+}
+let groupMode = try JSONDecoder().decode([Config].self, from: Data(contentsOf: groupURL))[0]
+let groupRestore = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.55-group-tip-restore.json")))[0]
+assert(groupMode.version == "270135" && groupRestore.version == "270135")
+let groupSilent = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.55-group-silent-restore.json")))[0]
+let groupOriginal = Data([0xa0,0x12,0,0x34])
+let groupPatched = Data([0x95,0,0,0x14])
+try latestFile.seek(toOffset: 0x353919c)
+try latestFile.write(contentsOf: groupOriginal)
+for (mode, expectedGuard, expectedBranch, expectedStore) in [
+    (groupMode, groupPatched, Data([0x40,0x10,0,0x34]), zeroStore),
+    (groupMode, groupPatched, Data([0x40,0x10,0,0x34]), zeroStore),
+    (groupRestore, groupOriginal, Data([0x40,0x10,0,0x34]), zeroStore),
+    (groupMode, groupPatched, Data([0x40,0x10,0,0x34]), zeroStore),
+    (groupSilent, groupOriginal, Data([0x82,0,0,0x14]), originalStore)
+] {
+    try Patcher.patch(binary: largeBinary, config: mode)
+    let actualGuard = try readAt(latestFile, 0x353919c, 4)
+    let actualBranch = try readAt(latestFile, 0x4d1fb48, 4)
+    let actualStore = try readAt(latestFile, 0x4d202e8, 4)
+    let actualMulti = try readAt(latestFile, 0x286154, 8)
+    assert(actualGuard == expectedGuard)
+    assert(actualBranch == expectedBranch)
+    assert(actualStore == expectedStore)
+    assert(actualMulti == latestMulti)
+}
+try latestFile.seek(toOffset: 0x4d1fb48)
+try latestFile.write(contentsOf: Data([0x40,0x10,0,0x34]))
+try Patcher.patch(binary: largeBinary, config: groupMode)
+let pristineGroup = try readAt(latestFile, 0x353919c, 4)
+let pristineStore = try readAt(latestFile, 0x4d202e8, 4)
+assert(pristineGroup == groupPatched && pristineStore == zeroStore)
+print("PASS: group native-tip switching, repeat application, private-tip/silent rollback, pristine parser, multi preserved")
