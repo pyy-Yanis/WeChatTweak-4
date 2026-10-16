@@ -101,6 +101,35 @@ struct Config: Decodable {
     let binary: Binary?
     let targets: [Target]
 
+    let defaultMode: String?
+    let modes: [String: [Target]]?
+
+    enum ModeError: LocalizedError {
+        case unsupported(version: String, mode: String, available: [String])
+        var errorDescription: String? {
+            switch self {
+            case let .unsupported(version, mode, available):
+                return "Mode '\(mode)' is not supported for build \(version). Available: \(available.joined(separator: ", "))"
+            }
+        }
+    }
+
+    var availableModes: [String] { modes?.keys.sorted() ?? ["silent"] }
+
+    func selecting(mode: String?) throws -> Config {
+        guard let modes else {
+            guard mode == nil || mode == "silent" else {
+                throw ModeError.unsupported(version: version, mode: mode!, available: availableModes)
+            }
+            return self
+        }
+        let selected = mode ?? defaultMode ?? "silent"
+        guard let selectedTargets = modes[selected], !selectedTargets.isEmpty else {
+            throw ModeError.unsupported(version: version, mode: selected, available: availableModes)
+        }
+        return Config(version: version, binary: binary, targets: selectedTargets + targets, defaultMode: nil, modes: nil)
+    }
+
     var binaryPath: String { (binary ?? .main).rawValue }
 
     static func load(url: URL) async throws -> [Config] {

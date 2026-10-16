@@ -20,7 +20,9 @@ extension Tweak {
             print("------ Current version ------")
             print(try await Command.version(app: options.app) ?? "unknown")
             print("------ Supported versions ------")
-            try await Config.load(url: options.config).forEach({ print($0.version) })
+            try await Config.load(url: options.config).forEach {
+                print("\($0.version)  modes: \($0.availableModes.joined(separator: ", "))  default: \($0.defaultMode ?? "silent")")
+            }
             Darwin.exit(EXIT_SUCCESS)
         }
     }
@@ -34,15 +36,20 @@ extension Tweak {
         @OptionGroup
         var options: Tweak.Options
 
+        @Option(help: "Patch mode: tip, silent, or private-tip (availability depends on build)")
+        var mode: String?
+
         mutating func run() async throws {
             print("------ Version ------")
             let version = try await Command.version(app: options.app)
             print("WeChat version: \(version ?? "unknown")")
 
             print("------ Config ------")
-            guard let config = (try await Config.load(url: options.config)).first(where: { $0.version == version }) else {
+            guard let versionConfig = (try await Config.load(url: options.config)).first(where: { $0.version == version }) else {
                 throw Error.unsupportedVersion
             }
+            let config = try versionConfig.selecting(mode: mode)
+            print("Mode: \(mode ?? versionConfig.defaultMode ?? "silent")")
             print("Matched config: \(config)")
 
             print("------ Patch ------")
@@ -114,7 +121,7 @@ struct Tweak: AsyncParsableCommand {
                 }
             }
         )
-        var config: URL = URL(string:"https://raw.githubusercontent.com/sunnyyoung/WeChatTweak/refs/heads/master/config.json")!
+        var config: URL = URL(string:"https://raw.githubusercontent.com/pyy-Yanis/WeChatTweak-4/refs/heads/master/config.json")!
     }
 
     static let configuration = CommandConfiguration(

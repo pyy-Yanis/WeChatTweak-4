@@ -15,3 +15,8 @@ swiftc -swift-version 6 -parse-as-library -module-cache-path "$test_build_dir/ca
   "$project_dir/Sources/WeChatTweak/Resigner.swift" \
   "$project_dir/Tests/ResignerChecks.swift" -o "$test_build_dir/resigner-tests"
 "$test_build_dir/resigner-tests"
+
+swiftc -swift-version 6 -parse-as-library -module-cache-path "$test_build_dir/cache" \
+  "$project_dir/Sources/WeChatTweak/Config.swift" \
+  "$project_dir/Tests/ModeChecks.swift" -o "$test_build_dir/mode-tests"
+"$test_build_dir/mode-tests"

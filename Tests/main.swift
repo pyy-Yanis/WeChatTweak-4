@@ -96,22 +96,22 @@ for invalid in ["GG", "0", "0102", ""] {
 }
 let bundled = URL(fileURLWithPath: CommandLine.arguments[1])
 let allConfigs = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config.json")))
-guard let supported = allConfigs.first(where: { $0.version == "270091" }),
-      supported.targets.map(\.identifier) == ["revoke", "multiInstance"] else {
-    print("FAIL: default config lacks 270091 anti-revoke plus multi-instance")
-    exit(1)
+func configuration(_ version: String, _ mode: String? = nil) throws -> Config {
+    guard let raw = allConfigs.first(where: { $0.version == version }) else {
+        fatalError("Missing build \(version)")
+    }
+    return try raw.selecting(mode: mode)
 }
+let supported = try configuration("270091", "silent")
+assert(supported.targets.map(\.identifier) == ["revoke", "multiInstance"])
 assert(supported.binaryPath == "Contents/Resources/wechat.dylib")
 assert(supported.targets[0].entries[0].addr == 0x4bbea28)
 assert(supported.targets[0].entries[0].asm == Data([0x82,0,0,0x14]))
 let legacyConfigs = allConfigs.filter { !["270091", "270135"].contains($0.version) }
 assert(legacyConfigs.count == 5)
 assert(legacyConfigs.allSatisfy { $0.binaryPath == "Contents/MacOS/WeChat" })
-let experimental = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.11.experimental.json")))
-assert(experimental.count == 1 && experimental[0].version == "270091")
-assert(experimental[0].targets.map(\.identifier) == ["revoke", "multiInstance"])
-assert(experimental[0].targets[1].entries[0].expected?.count == 8)
-print("PASS: fat slice isolation, malformed expected bytes, all legacy configs, experimental config")
+assert(allConfigs.count == 7 && Set(allConfigs.map(\.version)).count == 7)
+print("PASS: fat slice isolation, malformed expected bytes, legacy configs, unique version blocks")
 
 let syntheticApp = dir.appendingPathComponent("Synthetic.app")
 let resourceBinary = syntheticApp.appendingPathComponent("Contents/Resources/wechat.dylib")
@@ -163,29 +163,32 @@ let multiStub = try readAt(largeFile, 0x26dfa8, 8)
 assert(silentBranch == Data([0x82,0,0,0x14]))
 assert(untouchedTipStore == pristinePoints[1].1)
 assert(multiStub == Data([0x20,0,0x80,0x52,0xc0,3,0x5f,0xd6]))
-let tipConfigs = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.11-keeptip.json")))
-assert(tipConfigs.count == 1 && tipConfigs[0].version == "270091")
-assert(tipConfigs[0].targets.map(\.identifier) == ["revoke-keeptip", "multiInstance"])
-try Patcher.patch(binary: largeBinary, config: tipConfigs[0])
+let oldTip = try configuration("270091", "tip")
+try Patcher.patch(binary: largeBinary, config: oldTip)
 let restoredBranch = try readAt(largeFile, 0x4bbea28, 4)
 let zeroedIDStore = try readAt(largeFile, 0x4bbf1c8, 4)
 assert(restoredBranch == pristinePoints[0].1)
 assert(zeroedIDStore == Data([0x7f,0xe6,0,0xf9]))
-try Patcher.patch(binary: largeBinary, config: tipConfigs[0])
+try Patcher.patch(binary: largeBinary, config: oldTip)
 print("PASS: delivered 270091 silent anti-revoke + multi, native-tip variant, silent-to-tip transition, repeat application")
 
-guard let latest = allConfigs.first(where: { $0.version == "270135" }),
-      latest.targets.map(\.identifier) == ["revoke", "multiInstance"] else {
-    print("FAIL: config lacks current 270135 anti-revoke plus multi-instance")
-    exit(1)
-}
+try Patcher.patch(binary: largeBinary, config: supported)
+let oldSilentBranch = try readAt(largeFile, 0x4bbea28, 4)
+let oldRestoredStore = try readAt(largeFile, 0x4bbf1c8, 4)
+assert(oldSilentBranch == Data([0x82,0,0,0x14]))
+assert(oldRestoredStore == pristinePoints[1].1)
+try Patcher.patch(binary: largeBinary, config: supported)
+print("PASS: 270091 tip-to-silent restores ID store and supports repeat application")
+
+let latest = try configuration("270135", "silent")
+assert(latest.targets.map(\.identifier) == ["revoke", "multiInstance"])
 assert(latest.targets[0].entries[0].addr == 0x4d1fb48)
 assert(latest.targets[1].entries[0].addr == 0x286154)
 try largeHeader.write(to: largeBinary)
 let latestFile = try FileHandle(forUpdating: largeBinary)
 defer { try? latestFile.close() }
 try latestFile.truncate(atOffset: 0x5000000)
-for (offset, bytes) in [(UInt64(0x4d1fb48), Data([0x40,0x10,0,0x34])), (UInt64(0x286154), Data([0xff,3,6,0xd1,0xfc,0x6f,0x14,0xa9]))] {
+for (offset, bytes) in [(UInt64(0x4d202e8), Data([0x60,0xe6,0,0xf9])), (UInt64(0x353919c), Data([0xa0,0x12,0,0x34])), (UInt64(0x4d1fb48), Data([0x40,0x10,0,0x34])), (UInt64(0x286154), Data([0xff,3,6,0xd1,0xfc,0x6f,0x14,0xa9]))] {
     try latestFile.seek(toOffset: offset)
     try latestFile.write(contentsOf: bytes)
 }
@@ -196,13 +199,8 @@ assert(latestBranch == Data([0x82,0,0,0x14]))
 assert(latestMulti == Data([0x20,0,0x80,0x52,0xc0,3,0x5f,0xd6]))
 print("PASS: current 270135 delivered config at actual offsets")
 
-let latestTipURL = bundled.appendingPathComponent("config-4.1.15.55-keeptip.json")
-guard FileManager.default.fileExists(atPath: latestTipURL.path) else {
-    print("FAIL: 270135 native-tip config is missing")
-    exit(1)
-}
-let latestTip = try JSONDecoder().decode([Config].self, from: Data(contentsOf: latestTipURL))[0]
-let latestRestore = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.55-silent-restore.json")))[0]
+let latestTip = try configuration("270135", "private-tip")
+let latestRestore = try configuration("270135", "silent")
 assert(latestTip.version == "270135" && latestRestore.version == "270135")
 assert(latestTip.targets.map(\.identifier) == ["revoke-keeptip", "multiInstance"])
 let originalStore = Data([0x60,0xe6,0,0xf9])
@@ -227,15 +225,11 @@ let pristineToTip = try readAt(latestFile, 0x4d202e8, 4)
 assert(pristineToTip == zeroStore)
 print("PASS: 270135 native-tip pristine/silent transition, repeat apply, silent rollback, multi preserved")
 
-let groupURL = bundled.appendingPathComponent("config-4.1.15.55-group-tip.json")
-guard FileManager.default.fileExists(atPath: groupURL.path) else {
-    print("FAIL: 270135 group native-tip config is missing")
-    exit(1)
-}
-let groupMode = try JSONDecoder().decode([Config].self, from: Data(contentsOf: groupURL))[0]
-let groupRestore = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.55-group-tip-restore.json")))[0]
-assert(groupMode.version == "270135" && groupRestore.version == "270135")
-let groupSilent = try JSONDecoder().decode([Config].self, from: Data(contentsOf: bundled.appendingPathComponent("config-4.1.15.55-group-silent-restore.json")))[0]
+let groupMode = try configuration("270135", "tip")
+let groupRestore = try configuration("270135", "private-tip")
+let groupSilent = try configuration("270135", "silent")
+let defaultMode = try configuration("270135")
+assert(defaultMode.targets[0].identifier == groupMode.targets[0].identifier)
 let groupOriginal = Data([0xa0,0x12,0,0x34])
 let groupPatched = Data([0x95,0,0,0x14])
 try latestFile.seek(toOffset: 0x353919c)

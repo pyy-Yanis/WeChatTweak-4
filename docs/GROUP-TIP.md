@@ -14,11 +14,7 @@
 
 ## 配置和回退
 
-- config-4.1.15.55-group-tip.json：群聊原生提示候选 + 私聊原生提示 + 多开。
-- config-4.1.15.55-group-tip-restore.json：恢复本轮之前的原生提示模式（群聊静默），保留多开。
-- config-4.1.15.55-group-silent-restore.json：完整恢复普通静默防撤回与多开。
-
-旧版提示/静默配置不含本轮新增分支，因此回退必须用上述完整配置或完整应用备份。默认 config.json 保持之前稳定模式不变。
+统一使用根目录 config.json：默认 / --mode tip 为私聊群聊提示；--mode private-tip 为旧提示方式；--mode silent 完整恢复静默模式。所有模式都包含共享多开。旧分散配置已删除，请使用新版 CLI。
 
 ## 测试
 
