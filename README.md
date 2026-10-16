@@ -55,8 +55,8 @@ xcode-select --install
 然后下载源码并编译，需要 Swift 6 工具链及网络连接以获取依赖：
 
 ```bash
-git clone https://github.com/pyy-Yanis/WeChatTweak-4.1.15.git
-cd WeChatTweak-4.1.15
+git clone https://github.com/pyy-Yanis/WeChatTweak-4.git
+cd WeChatTweak-4
 swift build -c release --arch arm64
 ```
 
@@ -66,7 +66,7 @@ swift build -c release --arch arm64
 
 ### 使用预编译工具包
 
-若本仓库 [Releases](https://github.com/pyy-Yanis/WeChatTweak-4.1.15/releases) 提供 ARM64 工具包，可下载解压，在解压目录运行：
+若本仓库 [Releases](https://github.com/pyy-Yanis/WeChatTweak-4/releases) 提供 ARM64 工具包，可下载解压，在解压目录运行：
 
 ```bash
 chmod +x ./wechattweak ./libexec/wechattweak
