@@ -1,0 +1,15 @@
+{
+  "version": "270348",
+  "display_version": "4.2.0.12",
+  "pristine_arm64_sha256": "063b3025b25cb357657b2bd4a771ba0994b286190a17a2cb75b5c98a63cdc10b",
+  "parser_entry": "0x4e79f98",
+  "revoke": "0x4e7a208",
+  "classifier": "0x49e3e7c",
+  "newmsgid_store": "0x4e7a9a8",
+  "group_guard": "0x364bc74",
+  "group_destination": "0x364bec8",
+  "group_predicate": "0x4d0db6c",
+  "group_handler": "0x3649ea0",
+  "multi": "0x28a5e0",
+  "state": "Static validation and synthetic mode transitions passed; real chat behavior pending"
+}

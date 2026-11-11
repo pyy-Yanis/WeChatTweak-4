@@ -107,10 +107,14 @@ assert(supported.targets.map(\.identifier) == ["revoke", "multiInstance"])
 assert(supported.binaryPath == "Contents/Resources/wechat.dylib")
 assert(supported.targets[0].entries[0].addr == 0x4bbea28)
 assert(supported.targets[0].entries[0].asm == Data([0x82,0,0,0x14]))
-let legacyConfigs = allConfigs.filter { !["270091", "270135"].contains($0.version) }
+guard allConfigs.contains(where: { $0.version == "270345" }) else {
+    print("FAIL: config lacks build 270345")
+    exit(1)
+}
+let legacyConfigs = allConfigs.filter { !["270091", "270135", "270345", "270348", "270353"].contains($0.version) }
 assert(legacyConfigs.count == 5)
 assert(legacyConfigs.allSatisfy { $0.binaryPath == "Contents/MacOS/WeChat" })
-assert(allConfigs.count == 7 && Set(allConfigs.map(\.version)).count == 7)
+assert(allConfigs.count == 10 && Set(allConfigs.map(\.version)).count == 10)
 print("PASS: fat slice isolation, malformed expected bytes, legacy configs, unique version blocks")
 
 let syntheticApp = dir.appendingPathComponent("Synthetic.app")
@@ -258,3 +262,84 @@ let pristineGroup = try readAt(latestFile, 0x353919c, 4)
 let pristineStore = try readAt(latestFile, 0x4d202e8, 4)
 assert(pristineGroup == groupPatched && pristineStore == zeroStore)
 print("PASS: group native-tip switching, repeat application, private-tip/silent rollback, pristine parser, multi preserved")
+
+let nextTip = try configuration("270345")
+let nextSilent = try configuration("270345", "silent")
+let nextPrivate = try configuration("270345", "private-tip")
+assert(nextTip.targets[0].identifier == "revoke-keeptip-group")
+try largeHeader.write(to: largeBinary)
+try latestFile.truncate(atOffset: 0x5000000)
+for (addr, bytes) in [(UInt64(0x4e7787c), Data([0x40,0x10,0,0x34])), (UInt64(0x4e7801c), originalStore), (UInt64(0x3649374), groupOriginal), (UInt64(0x28b5e0), Data([0xff,3,6,0xd1,0xfc,0x6f,0x14,0xa9]))] {
+    try latestFile.seek(toOffset: addr)
+    try latestFile.write(contentsOf: bytes)
+}
+for (mode, parser, store, group) in [
+    (nextTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (nextTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (nextSilent, Data([0x82,0,0,0x14]), originalStore, groupOriginal),
+    (nextPrivate, Data([0x40,0x10,0,0x34]), zeroStore, groupOriginal),
+    (nextTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched)
+] {
+    try Patcher.patch(binary: largeBinary, config: mode)
+    let actualParser = try readAt(latestFile, 0x4e7787c, 4)
+    let actualStore = try readAt(latestFile, 0x4e7801c, 4)
+    let actualGroup = try readAt(latestFile, 0x3649374, 4)
+    let actualMulti = try readAt(latestFile, 0x28b5e0, 8)
+    assert(actualParser == parser && actualStore == store && actualGroup == group)
+    assert(actualMulti == latestMulti)
+}
+print("PASS: 270345 actual-offset default tip, idempotence, full silent/private-tip transitions and multi")
+
+let newestTip = try configuration("270348")
+let newestSilent = try configuration("270348", "silent")
+let newestPrivate = try configuration("270348", "private-tip")
+assert(newestTip.targets[0].identifier == "revoke-keeptip-group")
+try largeHeader.write(to: largeBinary)
+try latestFile.truncate(atOffset: 0x5000000)
+for (addr, bytes) in [(UInt64(0x4e7a208), Data([0x40,0x10,0,0x34])), (UInt64(0x4e7a9a8), originalStore), (UInt64(0x364bc74), groupOriginal), (UInt64(0x28a5e0), Data([0xff,3,6,0xd1,0xfc,0x6f,0x14,0xa9]))] {
+    try latestFile.seek(toOffset: addr)
+    try latestFile.write(contentsOf: bytes)
+}
+for (mode, parser, store, group) in [
+    (newestTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (newestTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (newestSilent, Data([0x82,0,0,0x14]), originalStore, groupOriginal),
+    (newestPrivate, Data([0x40,0x10,0,0x34]), zeroStore, groupOriginal),
+    (newestTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched)
+] {
+    try Patcher.patch(binary: largeBinary, config: mode)
+    let actualParser = try readAt(latestFile, 0x4e7a208, 4)
+    let actualStore = try readAt(latestFile, 0x4e7a9a8, 4)
+    let actualGroup = try readAt(latestFile, 0x364bc74, 4)
+    let actualMulti = try readAt(latestFile, 0x28a5e0, 8)
+    assert(actualParser == parser && actualStore == store && actualGroup == group)
+    assert(actualMulti == latestMulti)
+}
+print("PASS: 270348 actual-offset default tip, idempotence, full silent/private-tip transitions and multi")
+
+let currentBuildTip = try configuration("270353")
+let currentBuildSilent = try configuration("270353", "silent")
+let currentBuildPrivate = try configuration("270353", "private-tip")
+assert(currentBuildTip.targets[0].identifier == "revoke-keeptip-group")
+try largeHeader.write(to: largeBinary)
+try latestFile.truncate(atOffset: 0x5000000)
+for (addr, bytes) in [(UInt64(0x4e7d404), Data([0x40,0x10,0,0x34])), (UInt64(0x4e7dba4), originalStore), (UInt64(0x364ec3c), groupOriginal), (UInt64(0x28a5e0), Data([0xff,3,6,0xd1,0xfc,0x6f,0x14,0xa9]))] {
+    try latestFile.seek(toOffset: addr)
+    try latestFile.write(contentsOf: bytes)
+}
+for (mode, parser, store, group) in [
+    (currentBuildTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (currentBuildTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched),
+    (currentBuildSilent, Data([0x82,0,0,0x14]), originalStore, groupOriginal),
+    (currentBuildPrivate, Data([0x40,0x10,0,0x34]), zeroStore, groupOriginal),
+    (currentBuildTip, Data([0x40,0x10,0,0x34]), zeroStore, groupPatched)
+] {
+    try Patcher.patch(binary: largeBinary, config: mode)
+    let actualParser = try readAt(latestFile, 0x4e7d404, 4)
+    let actualStore = try readAt(latestFile, 0x4e7dba4, 4)
+    let actualGroup = try readAt(latestFile, 0x364ec3c, 4)
+    let actualMulti = try readAt(latestFile, 0x28a5e0, 8)
+    assert(actualParser == parser && actualStore == store && actualGroup == group)
+    assert(actualMulti == latestMulti)
+}
+print("PASS: 270353 actual-offset default tip, idempotence, full silent/private-tip transitions and multi")

@@ -1,0 +1,15 @@
+{
+  "version": "270353",
+  "display_version": "4.2.0.17",
+  "pristine_arm64_sha256": "ad6ce62a44444eea668aeadbbbf2dceab75b36de4d05d35185e4aac12d9a6722",
+  "parser_entry": "0x4e7d194",
+  "revoke": "0x4e7d404",
+  "classifier": "0x49e7078",
+  "newmsgid_store": "0x4e7dba4",
+  "group_guard": "0x364ec3c",
+  "group_destination": "0x364ee90",
+  "group_predicate": "0x4d10d68",
+  "group_handler": "0x364ce68",
+  "multi": "0x28a5e0",
+  "state": "Static validation, synthetic mode transitions, installed bytes and strict signature passed; two instances launched; user confirmed screen capture and private/group native revoke tips on 2026-11-11"
+}

@@ -1,0 +1,17 @@
+{
+  "version": "270345",
+  "display_version": "4.2.0.9",
+  "pristine_arm64_sha256": "b49d785e76927a8f1149e4db85db133001622447f892108a0927f092ff0bddec",
+  "parser_entry": "0x4e7760c",
+  "revoke": "0x4e7787c",
+  "classifier": "0x49e14f0",
+  "revokemsg_literal": "0x86839d0",
+  "newmsgid_store": "0x4e7801c",
+  "newmsgid_literal": "0x8963548",
+  "group_guard": "0x3649374",
+  "group_destination": "0x36495c8",
+  "group_predicate": "0x4d0b1e0",
+  "group_handler": "0x36475a0",
+  "multi": "0x28b5e0",
+  "state": "Static review, original bytes, synthetic mode transitions and staged signature passed; runtime chat behavior not tested"
+}

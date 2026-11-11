@@ -1,5 +1,290 @@
 [
   {
+    "version": "270353",
+    "binary": "Contents/Resources/wechat.dylib",
+    "targets": [
+      {
+        "identifier": "multiInstance",
+        "entries": [
+          {
+            "arch": "arm64",
+            "addr": "28a5e0",
+            "asm": "20008052C0035FD6",
+            "expected": "FF0306D1FC6F14A9"
+          }
+        ]
+      }
+    ],
+    "defaultMode": "tip",
+    "modes": {
+      "tip": [
+        {
+          "identifier": "revoke-keeptip-group",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7d404",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7dba4",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364ec3c",
+              "asm": "95000014",
+              "expected": "A0120034"
+            }
+          ]
+        }
+      ],
+      "silent": [
+        {
+          "identifier": "revoke",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7d404",
+              "asm": "82000014",
+              "expected": "40100034"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7dba4",
+              "asm": "60E600F9",
+              "expected": "7FE600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364ec3c",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ],
+      "private-tip": [
+        {
+          "identifier": "revoke-keeptip",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7d404",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7dba4",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364ec3c",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "version": "270348",
+    "binary": "Contents/Resources/wechat.dylib",
+    "targets": [
+      {
+        "identifier": "multiInstance",
+        "entries": [
+          {
+            "arch": "arm64",
+            "addr": "28a5e0",
+            "asm": "20008052C0035FD6",
+            "expected": "FF0306D1FC6F14A9"
+          }
+        ]
+      }
+    ],
+    "defaultMode": "tip",
+    "modes": {
+      "tip": [
+        {
+          "identifier": "revoke-keeptip-group",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7a208",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7a9a8",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364bc74",
+              "asm": "95000014",
+              "expected": "A0120034"
+            }
+          ]
+        }
+      ],
+      "silent": [
+        {
+          "identifier": "revoke",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7a208",
+              "asm": "82000014",
+              "expected": "40100034"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7a9a8",
+              "asm": "60E600F9",
+              "expected": "7FE600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364bc74",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ],
+      "private-tip": [
+        {
+          "identifier": "revoke-keeptip",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7a208",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7a9a8",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "364bc74",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "version": "270345",
+    "binary": "Contents/Resources/wechat.dylib",
+    "targets": [
+      {
+        "identifier": "multiInstance",
+        "entries": [
+          {
+            "arch": "arm64",
+            "addr": "28b5e0",
+            "asm": "20008052C0035FD6",
+            "expected": "FF0306D1FC6F14A9"
+          }
+        ]
+      }
+    ],
+    "defaultMode": "tip",
+    "modes": {
+      "tip": [
+        {
+          "identifier": "revoke-keeptip-group",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7787c",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7801c",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "3649374",
+              "asm": "95000014",
+              "expected": "A0120034"
+            }
+          ]
+        }
+      ],
+      "silent": [
+        {
+          "identifier": "revoke",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7787c",
+              "asm": "82000014",
+              "expected": "40100034"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7801c",
+              "asm": "60E600F9",
+              "expected": "7FE600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "3649374",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ],
+      "private-tip": [
+        {
+          "identifier": "revoke-keeptip",
+          "entries": [
+            {
+              "arch": "arm64",
+              "addr": "4e7787c",
+              "asm": "40100034",
+              "expected": "82000014"
+            },
+            {
+              "arch": "arm64",
+              "addr": "4e7801c",
+              "asm": "7FE600F9",
+              "expected": "60E600F9"
+            },
+            {
+              "arch": "arm64",
+              "addr": "3649374",
+              "asm": "A0120034",
+              "expected": "95000014"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
     "version": "270135",
     "binary": "Contents/Resources/wechat.dylib",
     "targets": [
